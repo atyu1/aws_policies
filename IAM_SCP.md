@@ -143,3 +143,47 @@
 ```
 "Principal": {"Service": ["ecs.amazonaws.com, cloudwatch.amazonaws.com"]}
 ```
+
+## Conditions
+### String related
+- StringEquals/StringNotEquals - case sensitive and exact match, for example tag on resource
+
+```
+"StringEquals": {"aws:PrincipalTag/environment": "development"}
+```
+
+- StringLike/StringNotLike - case sensitive, partial match by *, for example check s3 prefix is app1 related,
+- Symbol * can be used for any string 
+- Support variables like ${aws:username}
+
+```
+"StringLike": {"s3:prefix": ["App1", "Application1", "Applications/*/App1]}
+```
+
+### Date Related
+- DateEquals/DateLessThan/DateGreaterThan - compare dates, example, validate if token is newer then specified date
+
+```
+"DateGreaterThan": {"aws:TokenIssueTime": "2023-10-11T15:00:00Z"}
+```
+
+### Arn manipulation
+- ArnLike/ArnNotLike - checks the syntax of arn
+
+```
+"ArnLike": {"aws:s3arn": "arn:aws:iam::123456789012:root"}
+```
+
+### Booleans
+- Bool - checks if true or false
+  
+```
+"Bool": {"aws:SecureTransport": "false"}
+```
+
+### IP address
+- IPAddress/NotIPAddress - validates if IP is part of CIDR
+- `Applies only to Public IPs!!!` not applicable to request via VPC Endpoints
+```
+"IPAddress" : { "aws:SourceIp": "201.111.0.0/24"}
+```
