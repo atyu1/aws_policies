@@ -187,3 +187,88 @@
 ```
 "IPAddress" : { "aws:SourceIp": "201.111.0.0/24"}
 ```
+
+### Request region
+- global condition
+- validates if request is from any specific region
+- used with string Equals
+
+```
+"StringEquals": 
+  {
+    "aws:RequestedRegion": [ 
+    "eu-central-1",
+    "eu-west-1"
+  ] 
+}
+```
+
+- some services are global and located in us-east-1 so use NotAction + Deny with Regions, see earlier
+
+### PrincipalARN vs ServiceARN
+- Principal - is user, role, root
+- Service - if service makes a request, like S3
+
+
+### PrincipalTag vs ResourceTag
+- Principal - tag on user,role
+- Resource - tag on service, like EC2
+
+## Other
+
+### ABAC example
+- limit by SCP to start/stop instances only if tag owner and AccessProject match
+
+```
+{
+    "Version": "2012-10-17",
+    "Id": "Abac",
+    "Statement": [
+        {
+            "Sid": "Abacrule1",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:startInstance",
+                "ec2:stopInstance"
+            ],
+            "Resource": "arn:aws:ec2:*:123456789012:instance/*",
+            "Condition": {
+                "StringEquals": {
+                    "aws:ResourceTag/Owner": "${aws:username}",
+                    "aws:ResourceTag/AccessProject": "${aws:PrincipalTag/AccessProject}"
+                }
+            }
+        }
+    ]
+}
+```
+
+### MFA check
+- Allow anything on EC2 but stop/start only if user have MFA in his account
+
+```
+{
+    "Version": "2012-10-17",
+    "Id": "MFA",
+    "Statement": [
+        {
+            "Sid": "mfarule1",
+            "Effect": "Allow",
+            "Action": ["ec2:*"]
+        },{
+            "Sid": "mfarule2",
+            "Effect": "Deny",
+            "Action": [
+                "ec2:startInstance",
+                "ec2:stopInstance"
+            ],
+            "Resource": "*",
+            "Condition": {
+                "BoolIfExists": {
+                    "aws:MultiFactorAuthPresents": false
+                }
+            }
+        }
+    ]
+}
+```
