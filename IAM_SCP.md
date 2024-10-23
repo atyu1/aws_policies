@@ -205,6 +205,19 @@
 
 - some services are global and located in us-east-1 so use NotAction + Deny with Regions, see earlier
 
+### Token Issue time validation
+- Block users if token is older then a date
+- Good approach when token invalidation is needed
+- Example is everything before 10th of October match the condition
+
+```
+"DateLessThen": 
+  {
+    "aws:TokenIssueTime": "2023-10-10T00:00:00.000Z"
+}
+```
+
+## Principals
 ### PrincipalARN vs ServiceARN
 - Principal - is user, role, root
 - Service - if service makes a request, like S3
@@ -270,5 +283,50 @@
             }
         }
     ]
+}
+```
+
+### Restric EC2 types to t2.micro
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RequireMicroInstanceType",
+      "Effect": "Deny",
+      "Action": "ec2:RunInstances",
+      "Resource": [
+        "arn:aws:ec2:*:*:instance/*"
+      ],
+      "Condition": {
+        "StringNotEquals": {
+          "ec2:InstanceType": "t2.micro"
+        }
+      }
+    }
+  ]
+}
+```
+
+### Restrict IMDSv2 only
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "RequireIMDSv2",
+      "Effect": "Deny",
+      "Action": "ec2:RunInstances",
+      "Resource": [
+        "arn:aws:ec2:*:*:instance/*"
+      ],
+      "Condition": {
+        "StringNotEquals": {
+          "ec2:MetadataHttpTokens": "required"
+        }
+      }
+    }
+  ]
 }
 ```
