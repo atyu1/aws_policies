@@ -330,3 +330,29 @@
   ]
 }
 ```
+
+## Exposed Secret and Access Key
+- If some keys were exposed we need to deactive and delete them
+- That is not enough as there we can create session token from that key and that still will be valid
+- To block Session Token, we need to attach the following IAM policy to the User, which keys are exposed
+
+```
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Sid": "StopAttacker",
+      "Effect": "Deny",
+      "Action": "*",
+      "Resource": [
+        "*"
+      ],
+      "Condition": {
+        "DateLessThan": {
+          "aws:TokenIssueTime": "2024-11-09T19:38:00Z"
+        }
+      }
+    }
+  ]
+}
+```
